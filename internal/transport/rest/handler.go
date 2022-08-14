@@ -6,7 +6,7 @@ import (
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 
-	_ "github.com/notes-app/docs"
+	_ "github.com/rusystem/notes-app/docs"
 )
 
 type Handler struct {

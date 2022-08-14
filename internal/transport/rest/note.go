@@ -14,7 +14,7 @@ import (
 // @ID Create-note
 // @Accept json
 // @Produce json
-// @Param input body domain.Note true "note info"
+// @Param input body domain.UpdateNote true "note info"
 // @Success 200 {integer} integer 1
 // @Failure 400,404 {object} domain.ErrorResponse
 // @Failure 500 {object} domain.ErrorResponse
@@ -51,11 +51,12 @@ func (h *Handler) create(c *gin.Context) {
 // @ID Get-note-by-id
 // @Accept json
 // @Produce json
+// @Param id path integer true "Note ID"
 // @Success 200 {object} domain.Note
 // @Failure 400,404 {object} domain.ErrorResponse
 // @Failure 500 {object} domain.ErrorResponse
 // @Failure default {object} domain.ErrorResponse
-// @Router /api/note/:id [get]
+// @Router /api/note/{id} [get]
 func (h *Handler) getById(c *gin.Context) {
 	userId, err := getUserId(c)
 	if err != nil {
@@ -112,11 +113,12 @@ func (h *Handler) getAll(c *gin.Context) {
 // @ID Delete-note-by-id
 // @Accept json
 // @Produce json
+// @Param id path integer true "Note ID"
 // @Success 200 {integer} integer 1
 // @Failure 400,404 {object} domain.ErrorResponse
 // @Failure 500 {object} domain.ErrorResponse
 // @Failure default {object} domain.ErrorResponse
-// @Router /api/note/:id [delete]
+// @Router /api/note/{id} [delete]
 func (h *Handler) delete(c *gin.Context) {
 	userId, err := getUserId(c)
 	if err != nil {
@@ -144,12 +146,13 @@ func (h *Handler) delete(c *gin.Context) {
 // @ID Update-note-by-id
 // @Accept json
 // @Produce json
+// @Param id path integer true "Note ID"
 // @Param input body domain.UpdateNote true "note info"
 // @Success 200 {integer} integer 1
 // @Failure 400,404 {object} domain.ErrorResponse
 // @Failure 500 {object} domain.ErrorResponse
 // @Failure default {object} domain.ErrorResponse
-// @Router /api/note/:id [put]
+// @Router /api/note/{id} [put]
 func (h *Handler) update(c *gin.Context) {
 	userId, err := getUserId(c)
 	if err != nil {

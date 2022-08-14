@@ -28,6 +28,19 @@ definitions:
       title:
         type: string
     type: object
+  domain.User:
+    properties:
+      name:
+        type: string
+      password:
+        type: string
+      username:
+        type: string
+    required:
+    - name
+    - password
+    - username
+    type: object
   rest.signInInput:
     properties:
       password:
@@ -92,7 +105,7 @@ paths:
         name: input
         required: true
         schema:
-          $ref: '#/definitions/domain.Note'
+          $ref: '#/definitions/domain.UpdateNote'
       produces:
       - application/json
       responses:
@@ -121,12 +134,18 @@ paths:
       summary: Create new note
       tags:
       - note
-  /api/note/:id:
+  /api/note/{id}:
     delete:
       consumes:
       - application/json
       description: Delete note by id
       operationId: Delete-note-by-id
+      parameters:
+      - description: Note ID
+        in: path
+        name: id
+        required: true
+        type: integer
       produces:
       - application/json
       responses:
@@ -160,6 +179,12 @@ paths:
       - application/json
       description: Get note by id
       operationId: Get-note-by-id
+      parameters:
+      - description: Note ID
+        in: path
+        name: id
+        required: true
+        type: integer
       produces:
       - application/json
       responses:
@@ -194,6 +219,11 @@ paths:
       description: Update note by id
       operationId: Update-note-by-id
       parameters:
+      - description: Note ID
+        in: path
+        name: id
+        required: true
+        type: integer
       - description: note info
         in: body
         name: input
@@ -273,6 +303,13 @@ paths:
       - application/json
       description: Create new account
       operationId: Create-account
+      parameters:
+      - description: account info
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/domain.User'
       produces:
       - application/json
       responses:

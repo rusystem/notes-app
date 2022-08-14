@@ -12,7 +12,7 @@ import (
 // @ID Create-account
 // @Accept json
 // @Produce json
-// @Params input body domain.User true "account info"
+// @Param input body domain.User true "account info"
 // @Success 200 {integer} integer 1
 // @Failure 400,404 {object} domain.ErrorResponse
 // @Failure 500 {object} domain.ErrorResponse

@@ -96,7 +96,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/domain.Note"
+                            "$ref": "#/definitions/domain.UpdateNote"
                         }
                     }
                 ],
@@ -134,7 +134,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/note/:id": {
+        "/api/note/{id}": {
             "get": {
                 "security": [
                     {
@@ -153,6 +153,15 @@ const docTemplate = `{
                 ],
                 "summary": "Get note by id",
                 "operationId": "Get-note-by-id",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Note ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -205,6 +214,13 @@ const docTemplate = `{
                 "summary": "Update note by id",
                 "operationId": "Update-note-by-id",
                 "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Note ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
                     {
                         "description": "note info",
                         "name": "input",
@@ -266,6 +282,15 @@ const docTemplate = `{
                 ],
                 "summary": "Delete note by id",
                 "operationId": "Delete-note-by-id",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Note ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -373,6 +398,17 @@ const docTemplate = `{
                 ],
                 "summary": "SignUp",
                 "operationId": "Create-account",
+                "parameters": [
+                    {
+                        "description": "account info",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/domain.User"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -449,6 +485,25 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "domain.User": {
+            "type": "object",
+            "required": [
+                "name",
+                "password",
+                "username"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "username": {
                     "type": "string"
                 }
             }
