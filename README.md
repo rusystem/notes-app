@@ -1,11 +1,11 @@
 # Rest API for create notes.
-
+### Before using you need to install docker-compose & make.
 ### Installing:
 ```
 git clone https://github.com/rusystem/notes-app.git
 ```
 ```
-make build && make run && make swag
+make build && make run
 ```
 
 ### If this is the first launch then:

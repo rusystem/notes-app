@@ -6,6 +6,3 @@ run:
 
 migrate:
 	migrate -path ./schema -database 'postgres://postgres:qwerty@127.0.0.1:5432/postgres?sslmode=disable' up
-
-#swag:
-#	swag init -g cmd/main.go
