@@ -1,6 +1,8 @@
 package service
 
 import (
+	"github.com/rusystem/cache"
+	"github.com/rusystem/notes-app/internal/config"
 	"github.com/rusystem/notes-app/internal/domain"
 	"github.com/rusystem/notes-app/internal/repository"
 )
@@ -24,9 +26,9 @@ type Service struct {
 	Note
 }
 
-func NewService(repos *repository.Repository) *Service {
+func NewService(cfg *config.Config, c *cache.Cache, repos *repository.Repository) *Service {
 	return &Service{
-		Authorization: NewAuthService(repos.Authorization),
-		Note:          NewNoteService(repos.Note),
+		Authorization: NewAuthService(cfg, repos.Authorization),
+		Note:          NewNoteService(cfg, c, repos.Note),
 	}
 }

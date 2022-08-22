@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"github.com/jmoiron/sqlx"
+	"github.com/rusystem/cache"
 	"github.com/rusystem/notes-app/internal/config"
 	"github.com/rusystem/notes-app/internal/repository"
 	"github.com/rusystem/notes-app/internal/server"
@@ -10,6 +11,7 @@ import (
 	"github.com/rusystem/notes-app/internal/transport/rest"
 	"github.com/rusystem/notes-app/pkg/database"
 	"github.com/sirupsen/logrus"
+
 	"os"
 	"os/signal"
 	"syscall"
@@ -66,8 +68,10 @@ func main() {
 		}
 	}(db)
 
+	c := cache.New()
+
 	noteRepo := repository.NewRepository(db)
-	noteService := service.NewService(noteRepo)
+	noteService := service.NewService(cfg, c, noteRepo)
 	handler := rest.NewHandler(noteService)
 
 	srv := server.New(cfg, handler.InitRoutes())

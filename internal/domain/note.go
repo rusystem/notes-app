@@ -3,7 +3,7 @@ package domain
 import "errors"
 
 type Note struct {
-	ID          int64  `json:"id"`
+	ID          int    `json:"id"`
 	Title       string `json:"title"`
 	Description string `json:"description"`
 }

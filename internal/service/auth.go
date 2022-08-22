@@ -5,15 +5,14 @@ import (
 	"errors"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
+	"github.com/rusystem/notes-app/internal/config"
 	"github.com/rusystem/notes-app/internal/domain"
 	"github.com/rusystem/notes-app/internal/repository"
 	"time"
 )
 
 const (
-	salt       = "sdlkfgjhlkjh34lser34523cfrv"
-	signingKey = "dklfgjh34lkrnmlvmwe"
-	tokenTTL   = 24 * time.Hour
+	tokenTTL = 24 * time.Hour
 )
 
 type tokenClaims struct {
@@ -22,20 +21,21 @@ type tokenClaims struct {
 }
 
 type AuthService struct {
+	cfg  *config.Config
 	repo repository.Authorization
 }
 
-func NewAuthService(repo repository.Authorization) *AuthService {
-	return &AuthService{repo}
+func NewAuthService(cfg *config.Config, repo repository.Authorization) *AuthService {
+	return &AuthService{cfg, repo}
 }
 
 func (s *AuthService) CreateUser(user domain.User) (int, error) {
-	user.Password = generatePasswordHash(user.Password)
+	user.Password = generatePasswordHash(s.cfg, user.Password)
 	return s.repo.CreateUser(user)
 }
 
 func (s *AuthService) GenerateToken(username, password string) (string, error) {
-	user, err := s.repo.GetUser(username, generatePasswordHash(password))
+	user, err := s.repo.GetUser(username, generatePasswordHash(s.cfg, password))
 	if err != nil {
 		return "", err
 	}
@@ -48,7 +48,7 @@ func (s *AuthService) GenerateToken(username, password string) (string, error) {
 		user.Id,
 	})
 
-	return token.SignedString([]byte(signingKey))
+	return token.SignedString([]byte(s.cfg.Key.SigningKey))
 }
 
 func (s *AuthService) ParseToken(accessToken string) (int, error) {
@@ -57,7 +57,7 @@ func (s *AuthService) ParseToken(accessToken string) (int, error) {
 			return nil, errors.New("invalid signing method")
 		}
 
-		return []byte(signingKey), nil
+		return []byte(s.cfg.Key.SigningKey), nil
 	})
 	if err != nil {
 		return 0, err
@@ -71,9 +71,9 @@ func (s *AuthService) ParseToken(accessToken string) (int, error) {
 	return claims.UserId, nil
 }
 
-func generatePasswordHash(password string) string {
+func generatePasswordHash(cfg *config.Config, password string) string {
 	hash := sha1.New()
 	hash.Write([]byte(password))
 
-	return fmt.Sprintf("%x", hash.Sum([]byte(salt)))
+	return fmt.Sprintf("%x", hash.Sum([]byte(cfg.Key.Salt)))
 }
