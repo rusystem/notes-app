@@ -3,14 +3,26 @@ package config
 import (
 	"github.com/kelseyhightower/envconfig"
 	"github.com/spf13/viper"
+	"time"
 )
 
 type Config struct {
 	DB Postgres
 
+	Key Keys
+
+	Cache struct {
+		Ttl time.Duration `mapstructure:"ttl"`
+	} `mapstructure:"cache"`
+
 	Server struct {
 		Port int `mapstructure:"port"`
 	} `mapstructure:"server"`
+}
+
+type Keys struct {
+	Salt       string
+	SigningKey string
 }
 
 type Postgres struct {
@@ -37,6 +49,10 @@ func New(folder, filename string) (*Config, error) {
 	}
 
 	if err := envconfig.Process("db", &cfg.DB); err != nil {
+		return nil, err
+	}
+
+	if err := envconfig.Process("key", &cfg.Key); err != nil {
 		return nil, err
 	}
 
