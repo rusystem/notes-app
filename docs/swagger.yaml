@@ -15,26 +15,36 @@ definitions:
   domain.Note:
     properties:
       description:
+        example: Description
         type: string
       id:
         type: integer
       title:
+        example: Title
         type: string
     type: object
   domain.UpdateNote:
     properties:
       description:
+        example: Description!
         type: string
       title:
+        example: Title
         type: string
     type: object
   domain.User:
     properties:
       name:
+        example: Dmitry
+        minLength: 2
         type: string
       password:
+        example: "12345678"
+        minLength: 8
         type: string
       username:
+        example: mdmitry
+        minLength: 2
         type: string
     required:
     - name
@@ -44,8 +54,12 @@ definitions:
   rest.signInInput:
     properties:
       password:
+        example: "12345678"
+        minLength: 8
         type: string
       username:
+        example: mdmitry
+        minLength: 2
         type: string
     required:
     - password
