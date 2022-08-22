@@ -1,5 +1,5 @@
 # Rest API for create notes.
-### Before using you need to install [docker-compose](https://docs.docker.com/compose/install/) & [make](https://linuxhint.com/install-make-ubuntu/).
+### Before using you need to install [docker-compose](https://docs.docker.com/compose/install/) & make.
 ### Installing:
 ```
 git clone https://github.com/rusystem/notes-app.git
