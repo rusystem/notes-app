@@ -468,13 +468,15 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "description": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "Description"
                 },
                 "id": {
                     "type": "integer"
                 },
                 "title": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "Title"
                 }
             }
         },
@@ -482,10 +484,12 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "description": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "Description!"
                 },
                 "title": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "Title"
                 }
             }
         },
@@ -498,13 +502,19 @@ const docTemplate = `{
             ],
             "properties": {
                 "name": {
-                    "type": "string"
+                    "type": "string",
+                    "minLength": 2,
+                    "example": "Dmitry"
                 },
                 "password": {
-                    "type": "string"
+                    "type": "string",
+                    "minLength": 8,
+                    "example": "12345678"
                 },
                 "username": {
-                    "type": "string"
+                    "type": "string",
+                    "minLength": 2,
+                    "example": "mdmitry"
                 }
             }
         },
@@ -516,10 +526,14 @@ const docTemplate = `{
             ],
             "properties": {
                 "password": {
-                    "type": "string"
+                    "type": "string",
+                    "minLength": 8,
+                    "example": "12345678"
                 },
                 "username": {
-                    "type": "string"
+                    "type": "string",
+                    "minLength": 2,
+                    "example": "mdmitry"
                 }
             }
         }
