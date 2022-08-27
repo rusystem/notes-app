@@ -1,6 +1,7 @@
 package rest
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/rusystem/notes-app/internal/domain"
 	"net/http"
@@ -36,37 +37,65 @@ func (h *Handler) signUp(c *gin.Context) {
 	})
 }
 
-type signInInput struct {
-	Username string `json:"username" binding:"required,min=2" example:"mdmitry"`
-	Password string `json:"password" binding:"required,min=8" example:"12345678"`
-}
-
 // @Summary SignIn
 // @Tags auth
 // @Description login
 // @ID login
 // @Accept json
 // @Produce json
-// @Param input body signInInput true "credentials"
+// @Param input body domain.SignInInput true "credentials"
 // @Success 200 {string} string "token"
 // @Failure 400,404 {object} domain.ErrorResponse
 // @Failure 500 {object} domain.ErrorResponse
 // @Failure default {object} domain.ErrorResponse
 // @Router /auth/sign-in [post]
 func (h *Handler) signIn(c *gin.Context) {
-	var input signInInput
+	var input domain.SignInInput
 	if err := c.BindJSON(&input); err != nil {
 		domain.NewErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	token, err := h.services.Authorization.GenerateToken(c, input.Username, input.Password)
+	accessToken, refreshToken, err := h.services.Authorization.SignIn(c, input)
 	if err != nil {
 		domain.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
+	c.Header("Set-Cookie", fmt.Sprintf("refresh-token='%s'; HttpOnly", refreshToken))
+
 	c.JSON(http.StatusOK, map[string]interface{}{
-		"token": token,
+		"token": accessToken,
+	})
+}
+
+// @Summary Refresh
+// @Tags auth
+// @Description refresh tokens
+// @ID refresh-tokens
+// @Accept json
+// @Produce json
+// @Success 200 {string} string "token"
+// @Failure 400,404 {object} domain.ErrorResponse
+// @Failure 500 {object} domain.ErrorResponse
+// @Failure default {object} domain.ErrorResponse
+// @Router /auth/refresh [get]
+func (h *Handler) refresh(c *gin.Context) {
+	cookie, err := c.Cookie("refresh-token")
+	if err != nil {
+		domain.NewErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	accessToken, refreshToken, err := h.services.RefreshTokens(c, cookie)
+	if err != nil {
+		domain.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	c.Header("Set-Cookie", fmt.Sprintf("refresh-token='%s'; HttpOnly", refreshToken))
+
+	c.JSON(http.StatusOK, map[string]interface{}{
+		"token": accessToken,
 	})
 }

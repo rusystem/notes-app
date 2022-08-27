@@ -6,3 +6,4 @@ cache:
 
 auth:
   token_ttl: 900s
+  refresh_token_ttl: 720h
