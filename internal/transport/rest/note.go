@@ -33,7 +33,7 @@ func (h *Handler) create(c *gin.Context) {
 		return
 	}
 
-	id, err := h.services.Note.Create(userId, input)
+	id, err := h.services.Note.Create(c, userId, input)
 	if err != nil {
 		domain.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
@@ -69,7 +69,7 @@ func (h *Handler) getById(c *gin.Context) {
 		domain.NewErrorResponse(c, http.StatusBadRequest, "invalid id param")
 	}
 
-	note, err := h.services.GetByID(userId, id)
+	note, err := h.services.GetByID(c, userId, id)
 	if err != nil {
 		domain.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
@@ -97,7 +97,7 @@ func (h *Handler) getAll(c *gin.Context) {
 		domain.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
 	}
 
-	notes, err := h.services.Note.GetAll(userId)
+	notes, err := h.services.Note.GetAll(c, userId)
 	if err != nil {
 		domain.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
@@ -131,7 +131,7 @@ func (h *Handler) delete(c *gin.Context) {
 		return
 	}
 
-	err = h.services.Delete(userId, id)
+	err = h.services.Delete(c, userId, id)
 	if err != nil {
 		domain.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
 	}
@@ -172,7 +172,7 @@ func (h *Handler) update(c *gin.Context) {
 		return
 	}
 
-	if err := h.services.Update(userId, id, input); err != nil {
+	if err := h.services.Update(c, userId, id, input); err != nil {
 		domain.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}

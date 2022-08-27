@@ -3,3 +3,6 @@ server:
 
 cache:
   ttl: 60s
+
+auth:
+  token_ttl: 900s
