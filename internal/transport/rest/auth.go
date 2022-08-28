@@ -5,6 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/rusystem/notes-app/internal/domain"
 	"net/http"
+	"strings"
 )
 
 // @Summary SignUp
@@ -87,7 +88,8 @@ func (h *Handler) refresh(c *gin.Context) {
 		return
 	}
 
-	accessToken, refreshToken, err := h.services.RefreshTokens(c, cookie)
+	token := strings.ReplaceAll(cookie, "'", "")
+	accessToken, refreshToken, err := h.services.RefreshTokens(c, token)
 	if err != nil {
 		domain.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return

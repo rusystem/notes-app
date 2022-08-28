@@ -45,7 +45,7 @@ func (r *AuthRepository) CreateToken(ctx context.Context, token domain.RefreshSe
 }
 
 func (r *AuthRepository) GetToken(ctx context.Context, token string) (domain.RefreshSession, error) {
-	query := fmt.Sprintf("SELECT id, user_id, token, expires_at FROM %s WHERE token=$1",
+	query := fmt.Sprintf("SELECT id, user_id, token, expires_at FROM %s WHERE token = $1",
 		refreshTokensTable)
 
 	var t domain.RefreshSession
