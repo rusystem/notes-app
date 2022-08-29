@@ -2,38 +2,24 @@ package rest
 
 import (
 	"errors"
+	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/rusystem/notes-app/internal/domain"
 	"net/http"
-	"strings"
 )
 
 const (
-	authorizationHeader = "Authorization"
-	userCtx             = "userId"
+	cookie  = "session"
+	userCtx = "userId"
 )
 
 func (h *Handler) userIdentity(c *gin.Context) {
-	header := c.GetHeader(authorizationHeader)
-	if header == "" {
-		domain.NewErrorResponse(c, http.StatusUnauthorized, "empty auth header")
-		return
-	}
+	session := sessions.Default(c)
+	userId := session.Get(cookie)
 
-	headerParts := strings.Split(header, " ")
-	if len(headerParts) != 2 || headerParts[0] != "Bearer" {
-		domain.NewErrorResponse(c, http.StatusUnauthorized, "invalid auth header")
-		return
-	}
-
-	if len(headerParts[1]) == 0 {
-		domain.NewErrorResponse(c, http.StatusUnauthorized, "token is empty")
-		return
-	}
-
-	userId, err := h.services.Authorization.ParseToken(headerParts[1])
-	if err != nil {
-		domain.NewErrorResponse(c, http.StatusUnauthorized, "invalid token")
+	if userId == nil {
+		domain.NewErrorResponse(c, http.StatusUnauthorized, "user not logged in")
+		c.Abort()
 		return
 	}
 

@@ -7,7 +7,8 @@ import (
 )
 
 type Config struct {
-	DB Postgres
+	DB  Postgres
+	RDB Redis
 
 	Key Keys
 
@@ -36,6 +37,14 @@ type Postgres struct {
 	Name     string
 	SSLMode  string
 	Password string
+}
+
+type Redis struct {
+	Size     int
+	Network  string
+	Port     int
+	Password string
+	Key      string
 }
 
 func New(folder, filename string) (*Config, error) {

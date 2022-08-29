@@ -70,3 +70,7 @@ func (h *Handler) signIn(c *gin.Context) {
 		"token": token,
 	})
 }
+
+func (h *Handler) logout(c *gin.Context) {
+
+}

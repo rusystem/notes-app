@@ -50,7 +50,7 @@ func main() {
 		logrus.Fatal(err)
 	}
 
-	db, err := database.NewPostgresConnection(database.ConnectionInfo{
+	db, err := database.NewPostgresConnection(database.PSQLConnectionInfo{
 		Host:     cfg.DB.Host,
 		Port:     cfg.DB.Port,
 		Username: cfg.DB.Username,
@@ -70,7 +70,13 @@ func main() {
 
 	c := cache.New()
 
-	noteRepo := repository.NewRepository(db)
+	noteRepo := repository.NewRepository(db, &database.RedisConnectionInfo{
+		Size:     cfg.RDB.Size,
+		Network:  cfg.RDB.Network,
+		Port:     cfg.RDB.Port,
+		Password: cfg.RDB.Password,
+		Key:      cfg.RDB.Key,
+	})
 	noteService := service.NewService(cfg, c, noteRepo)
 	handler := rest.NewHandler(noteService)
 

@@ -5,7 +5,16 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/rusystem/notes-app/internal/domain"
 	"github.com/rusystem/notes-app/internal/repository/psql"
+	"github.com/rusystem/notes-app/internal/repository/rdb"
+	"github.com/rusystem/notes-app/pkg/database"
 )
+
+type Session interface {
+	Save() error
+	Set(key interface{}) error
+	Delete(key interface{}) error
+	Get(key interface{}) (int, error)
+}
 
 type Authorization interface {
 	CreateUser(ctx context.Context, user domain.User) (int, error)
@@ -21,12 +30,14 @@ type Note interface {
 }
 
 type Repository struct {
+	Session
 	Authorization
 	Note
 }
 
-func NewRepository(db *sqlx.DB) *Repository {
+func NewRepository(db *sqlx.DB, rdbInfo *database.RedisConnectionInfo) *Repository {
 	return &Repository{
+		Session:       rdb.NewSessionRepository(rdbInfo),
 		Authorization: psql.NewAuthRepository(db),
 		Note:          psql.NewNoteRepository(db),
 	}
