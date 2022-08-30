@@ -96,6 +96,8 @@ func (h *Handler) logout(c *gin.Context) {
 		return
 	}
 
+	c.SetCookie(domain.AuthCookie, token, -1, "/", "localhost", false, true)
+
 	c.JSON(http.StatusOK, map[string]interface{}{
 		"message": "you have logged out",
 	})
