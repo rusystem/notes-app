@@ -13,13 +13,7 @@ const (
 
 func (h *Handler) userIdentity(c *gin.Context) {
 	token, err := c.Cookie(domain.AuthCookie)
-	if err != nil {
-		domain.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
-		c.Abort()
-		return
-	}
-
-	if token == "" {
+	if err != nil || token == "" {
 		domain.NewErrorResponse(c, http.StatusUnauthorized, err.Error())
 		c.Abort()
 		return
@@ -27,7 +21,7 @@ func (h *Handler) userIdentity(c *gin.Context) {
 
 	userId, err := h.services.GetSession(c, token)
 	if err != nil || userId == 0 {
-		domain.NewErrorResponse(c, http.StatusUnauthorized, "user not logged in")
+		domain.NewErrorResponse(c, http.StatusUnauthorized, err.Error())
 		c.Abort()
 		return
 	}
