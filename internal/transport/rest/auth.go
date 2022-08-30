@@ -36,41 +36,67 @@ func (h *Handler) signUp(c *gin.Context) {
 	})
 }
 
-type signInInput struct {
-	Username string `json:"username" binding:"required,min=2" example:"mdmitry"`
-	Password string `json:"password" binding:"required,min=8" example:"12345678"`
-}
-
 // @Summary SignIn
 // @Tags auth
 // @Description login
 // @ID login
 // @Accept json
 // @Produce json
-// @Param input body signInInput true "credentials"
-// @Success 200 {string} string "token"
+// @Param input body domain.SignInInput true "credentials"
+// @Success 200 {string} string "message"
 // @Failure 400,404 {object} domain.ErrorResponse
 // @Failure 500 {object} domain.ErrorResponse
 // @Failure default {object} domain.ErrorResponse
 // @Router /auth/sign-in [post]
 func (h *Handler) signIn(c *gin.Context) {
-	var input signInInput
+	var input domain.SignInInput
 	if err := c.BindJSON(&input); err != nil {
 		domain.NewErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	token, err := h.services.Authorization.GenerateToken(c, input.Username, input.Password)
+	cookie, err := h.services.SignIn(c, input)
 	if err != nil {
 		domain.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
+	c.SetCookie(cookie.Name, cookie.Token, cookie.MaxAge, "/", "localhost", false, true)
+
 	c.JSON(http.StatusOK, map[string]interface{}{
-		"token": token,
+		"message": "authorization was successful",
 	})
 }
 
+// @Summary Logout
+// @Tags auth
+// @Description logout
+// @ID logout
+// @Accept json
+// @Produce json
+// @Success 200 {string} string "message"
+// @Failure 400,404 {object} domain.ErrorResponse
+// @Failure 500 {object} domain.ErrorResponse
+// @Failure default {object} domain.ErrorResponse
+// @Router /auth/logout [get]
 func (h *Handler) logout(c *gin.Context) {
+	token, err := c.Cookie(domain.AuthCookie)
+	if err != nil {
+		domain.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
 
+	if token == "" {
+		domain.NewErrorResponse(c, http.StatusUnauthorized, err.Error())
+		return
+	}
+
+	if err = h.services.Logout(c, token); err != nil {
+		domain.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, map[string]interface{}{
+		"message": "you have logged out",
+	})
 }

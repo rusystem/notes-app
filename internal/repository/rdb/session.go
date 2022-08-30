@@ -1,33 +1,38 @@
 package rdb
 
 import (
-	"fmt"
-	"github.com/gin-contrib/sessions/redis"
-	"github.com/rusystem/notes-app/pkg/database"
+	"context"
+	"github.com/go-redis/redis/v9"
+	"strconv"
+	"time"
 )
 
 type SessionRepository struct {
-	store redis.Store
+	rdbClient *redis.Client
 }
 
-func NewSessionRepository(rdb *database.RedisConnectionInfo) *SessionRepository {
-	store, _ := redis.NewStore(rdb.Size, rdb.Network, fmt.Sprintf("localhost:%d", rdb.Port), rdb.Password, []byte(rdb.Key))
-
-	return &SessionRepository{store: store}
+func NewSessionRepository(rdbClient *redis.Client) *SessionRepository {
+	return &SessionRepository{rdbClient: rdbClient}
 }
 
-func (r *SessionRepository) Save() error {
-	return nil
+func (r *SessionRepository) Set(ctx context.Context, token string, userId int, ttl time.Duration) error {
+	return r.rdbClient.Set(ctx, token, userId, ttl).Err()
 }
 
-func (r *SessionRepository) Set(key interface{}) error {
-	return nil
+func (r *SessionRepository) Delete(ctx context.Context, token string) error {
+	return r.rdbClient.Del(ctx, token).Err()
 }
 
-func (r *SessionRepository) Delete(key interface{}) error {
-	return nil
-}
+func (r *SessionRepository) Get(ctx context.Context, token string) (int, error) {
+	result, err := r.rdbClient.Get(ctx, token).Result()
+	if err != nil {
+		return 0, err
+	}
 
-func (r *SessionRepository) Get(key interface{}) (int, error) {
-	return 0, nil
+	userId, err := strconv.Atoi(result)
+	if err != nil {
+		return 0, err
+	}
+
+	return userId, nil
 }

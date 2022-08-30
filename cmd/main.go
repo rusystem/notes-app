@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"github.com/go-redis/redis/v9"
 	"github.com/jmoiron/sqlx"
 	"github.com/rusystem/cache"
 	"github.com/rusystem/notes-app/internal/config"
@@ -40,10 +41,6 @@ func init() {
 // @host localhost:8080
 // @BasePath /
 
-// @securityDefinitions.apikey ApiKeyAuth
-// @in header
-// @name Authorization
-
 func main() {
 	cfg, err := config.New(CONFIG_DIR, CONFIG_FILE)
 	if err != nil {
@@ -61,22 +58,26 @@ func main() {
 	if err != nil {
 		logrus.Fatal(err)
 	}
-
 	defer func(db *sqlx.DB) {
 		if err := db.Close(); err != nil {
 			logrus.Fatal(err)
 		}
 	}(db)
 
-	c := cache.New()
-
-	noteRepo := repository.NewRepository(db, &database.RedisConnectionInfo{
-		Size:     cfg.RDB.Size,
-		Network:  cfg.RDB.Network,
+	rdb := database.NewRedisClient(database.RedisConnectionInfo{
+		Host:     cfg.RDB.Host,
 		Port:     cfg.RDB.Port,
 		Password: cfg.RDB.Password,
-		Key:      cfg.RDB.Key,
 	})
+	defer func(rdb *redis.Client) {
+		if err := rdb.Close(); err != nil {
+			logrus.Fatal(err)
+		}
+	}(rdb)
+
+	c := cache.New()
+
+	noteRepo := repository.NewRepository(db, rdb)
 	noteService := service.NewService(cfg, c, noteRepo)
 	handler := rest.NewHandler(noteService)
 

@@ -3,27 +3,22 @@ package service
 import (
 	"context"
 	"crypto/sha1"
-	"errors"
 	"fmt"
-	"github.com/dgrijalva/jwt-go"
 	"github.com/rusystem/notes-app/internal/config"
 	"github.com/rusystem/notes-app/internal/domain"
 	"github.com/rusystem/notes-app/internal/repository"
+	"math/rand"
 	"time"
 )
 
-type tokenClaims struct {
-	jwt.StandardClaims
-	UserId int `json:"user_id"`
-}
-
 type AuthService struct {
-	cfg  *config.Config
-	repo repository.Authorization
+	cfg     *config.Config
+	repo    repository.Authorization
+	session repository.Session
 }
 
-func NewAuthService(cfg *config.Config, repo repository.Authorization) *AuthService {
-	return &AuthService{cfg, repo}
+func NewAuthService(cfg *config.Config, repo repository.Authorization, session repository.Session) *AuthService {
+	return &AuthService{cfg, repo, session}
 }
 
 func (s *AuthService) CreateUser(ctx context.Context, user domain.User) (int, error) {
@@ -31,41 +26,44 @@ func (s *AuthService) CreateUser(ctx context.Context, user domain.User) (int, er
 	return s.repo.CreateUser(ctx, user)
 }
 
-func (s *AuthService) GenerateToken(ctx context.Context, username, password string) (string, error) {
-	user, err := s.repo.GetUser(ctx, username, generatePasswordHash(s.cfg, password))
+func (s *AuthService) SignIn(ctx context.Context, inp domain.SignInInput) (domain.Cookie, error) {
+	user, err := s.repo.GetUser(ctx, inp.Username, generatePasswordHash(s.cfg, inp.Password))
 	if err != nil {
+		return domain.Cookie{}, err
+	}
+
+	token, err := newToken()
+	if err != nil {
+		return domain.Cookie{}, err
+	}
+
+	err = s.session.Set(ctx, token, user.Id, s.cfg.Auth.SessionTTL)
+	if err != nil {
+		return domain.Cookie{}, err
+	}
+
+	return domain.Cookie{Name: domain.AuthCookie, Token: token, MaxAge: int(s.cfg.Auth.SessionTTL.Seconds())}, nil
+}
+
+func (s *AuthService) GetSession(ctx context.Context, token string) (int, error) {
+	return s.session.Get(ctx, token)
+}
+
+func (s *AuthService) Logout(ctx context.Context, token string) error {
+	return s.session.Delete(ctx, token)
+}
+
+func newToken() (string, error) {
+	b := make([]byte, 32)
+
+	s := rand.NewSource(time.Now().Unix())
+	r := rand.New(s)
+
+	if _, err := r.Read(b); err != nil {
 		return "", err
 	}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, &tokenClaims{
-		jwt.StandardClaims{
-			ExpiresAt: time.Now().Add(s.cfg.Auth.TokenTTL).Unix(),
-			IssuedAt:  time.Now().Unix(),
-		},
-		user.Id,
-	})
-
-	return token.SignedString([]byte(s.cfg.Key.SigningKey))
-}
-
-func (s *AuthService) ParseToken(accessToken string) (int, error) {
-	token, err := jwt.ParseWithClaims(accessToken, &tokenClaims{}, func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, errors.New("invalid signing method")
-		}
-
-		return []byte(s.cfg.Key.SigningKey), nil
-	})
-	if err != nil {
-		return 0, err
-	}
-
-	claims, ok := token.Claims.(*tokenClaims)
-	if !ok {
-		return 0, errors.New("token claims are not of type *tokenClaims")
-	}
-
-	return claims.UserId, nil
+	return fmt.Sprintf("%x", b), nil
 }
 
 func generatePasswordHash(cfg *config.Config, password string) string {

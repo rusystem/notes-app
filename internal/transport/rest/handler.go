@@ -1,7 +1,6 @@
 package rest
 
 import (
-	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/rusystem/notes-app/internal/service"
 	swaggerFiles "github.com/swaggo/files"
@@ -18,10 +17,9 @@ func NewHandler(service *service.Service) *Handler {
 	return &Handler{service}
 }
 
-func (h *Handler) InitRoutes(store sessions.Store) *gin.Engine {
+func (h *Handler) InitRoutes() *gin.Engine {
 	router := gin.New()
 	router.Use(gin.Logger())
-	router.Use(sessions.Sessions("session", store))
 
 	auth := router.Group("/auth")
 	{

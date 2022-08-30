@@ -2,18 +2,18 @@ package repository
 
 import (
 	"context"
+	"github.com/go-redis/redis/v9"
 	"github.com/jmoiron/sqlx"
 	"github.com/rusystem/notes-app/internal/domain"
 	"github.com/rusystem/notes-app/internal/repository/psql"
 	"github.com/rusystem/notes-app/internal/repository/rdb"
-	"github.com/rusystem/notes-app/pkg/database"
+	"time"
 )
 
 type Session interface {
-	Save() error
-	Set(key interface{}) error
-	Delete(key interface{}) error
-	Get(key interface{}) (int, error)
+	Set(ctx context.Context, token string, userId int, ttl time.Duration) error
+	Delete(ctx context.Context, token string) error
+	Get(ctx context.Context, token string) (int, error)
 }
 
 type Authorization interface {
@@ -35,9 +35,9 @@ type Repository struct {
 	Note
 }
 
-func NewRepository(db *sqlx.DB, rdbInfo *database.RedisConnectionInfo) *Repository {
+func NewRepository(db *sqlx.DB, rdbClient *redis.Client) *Repository {
 	return &Repository{
-		Session:       rdb.NewSessionRepository(rdbInfo),
+		Session:       rdb.NewSessionRepository(rdbClient),
 		Authorization: psql.NewAuthRepository(db),
 		Note:          psql.NewNoteRepository(db),
 	}

@@ -10,8 +10,9 @@ import (
 
 type Authorization interface {
 	CreateUser(ctx context.Context, user domain.User) (int, error)
-	GenerateToken(ctx context.Context, username, password string) (string, error)
-	ParseToken(token string) (int, error)
+	GetSession(ctx context.Context, token string) (int, error)
+	SignIn(ctx context.Context, inp domain.SignInInput) (domain.Cookie, error)
+	Logout(ctx context.Context, token string) error
 }
 
 type Note interface {
@@ -29,7 +30,7 @@ type Service struct {
 
 func NewService(cfg *config.Config, cache *cache.Cache, repos *repository.Repository) *Service {
 	return &Service{
-		Authorization: NewAuthService(cfg, repos.Authorization),
+		Authorization: NewAuthService(cfg, repos.Authorization, repos.Session),
 		Note:          NewNoteService(cfg, cache, repos.Note),
 	}
 }

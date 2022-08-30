@@ -21,13 +21,8 @@ type Config struct {
 	} `mapstructure:"server"`
 
 	Auth struct {
-		TokenTTL time.Duration `mapstructure:"token_ttl"`
+		SessionTTL time.Duration `mapstructure:"session_ttl"`
 	} `mapstructure:"auth"`
-}
-
-type Keys struct {
-	Salt       string
-	SigningKey string
 }
 
 type Postgres struct {
@@ -40,11 +35,13 @@ type Postgres struct {
 }
 
 type Redis struct {
-	Size     int
-	Network  string
+	Host     string
 	Port     int
 	Password string
-	Key      string
+}
+
+type Keys struct {
+	Salt string
 }
 
 func New(folder, filename string) (*Config, error) {
@@ -62,6 +59,10 @@ func New(folder, filename string) (*Config, error) {
 	}
 
 	if err := envconfig.Process("db", &cfg.DB); err != nil {
+		return nil, err
+	}
+
+	if err := envconfig.Process("rdb", &cfg.RDB); err != nil {
 		return nil, err
 	}
 
