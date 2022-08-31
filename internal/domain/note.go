@@ -11,6 +11,6 @@ type UpdateNote struct {
 	Description *string `json:"description" example:"Description!"`
 }
 
-func (un *UpdateNote) IsCorrect() bool {
+func (un UpdateNote) IsValid() bool {
 	return un.Title != nil && un.Description != nil
 }
