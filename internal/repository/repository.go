@@ -10,6 +10,8 @@ import (
 type Authorization interface {
 	CreateUser(ctx context.Context, user domain.User) (int, error)
 	GetUser(ctx context.Context, username, password string) (domain.User, error)
+	GetToken(ctx context.Context, token string) (domain.RefreshSession, error)
+	CreateToken(ctx context.Context, token domain.RefreshSession) error
 }
 
 type Note interface {

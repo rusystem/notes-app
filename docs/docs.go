@@ -325,6 +325,54 @@ const docTemplate = `{
                 }
             }
         },
+        "/auth/refresh": {
+            "get": {
+                "description": "refresh tokens",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Refresh",
+                "operationId": "refresh-tokens",
+                "responses": {
+                    "200": {
+                        "description": "token",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    },
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/auth/sign-in": {
             "post": {
                 "description": "login",
@@ -346,7 +394,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/rest.signInInput"
+                            "$ref": "#/definitions/domain.SignInInput"
                         }
                     }
                 ],
@@ -480,6 +528,25 @@ const docTemplate = `{
                 }
             }
         },
+        "domain.SignInInput": {
+            "type": "object",
+            "required": [
+                "password",
+                "username"
+            ],
+            "properties": {
+                "password": {
+                    "type": "string",
+                    "minLength": 8,
+                    "example": "12345678"
+                },
+                "username": {
+                    "type": "string",
+                    "minLength": 2,
+                    "example": "mdmitry"
+                }
+            }
+        },
         "domain.UpdateNote": {
             "type": "object",
             "properties": {
@@ -506,25 +573,6 @@ const docTemplate = `{
                     "minLength": 2,
                     "example": "Dmitry"
                 },
-                "password": {
-                    "type": "string",
-                    "minLength": 8,
-                    "example": "12345678"
-                },
-                "username": {
-                    "type": "string",
-                    "minLength": 2,
-                    "example": "mdmitry"
-                }
-            }
-        },
-        "rest.signInInput": {
-            "type": "object",
-            "required": [
-                "password",
-                "username"
-            ],
-            "properties": {
                 "password": {
                     "type": "string",
                     "minLength": 8,

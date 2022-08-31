@@ -23,6 +23,20 @@ definitions:
         example: Title
         type: string
     type: object
+  domain.SignInInput:
+    properties:
+      password:
+        example: "12345678"
+        minLength: 8
+        type: string
+      username:
+        example: mdmitry
+        minLength: 2
+        type: string
+    required:
+    - password
+    - username
+    type: object
   domain.UpdateNote:
     properties:
       description:
@@ -48,20 +62,6 @@ definitions:
         type: string
     required:
     - name
-    - password
-    - username
-    type: object
-  rest.signInInput:
-    properties:
-      password:
-        example: "12345678"
-        minLength: 8
-        type: string
-      username:
-        example: mdmitry
-        minLength: 2
-        type: string
-    required:
     - password
     - username
     type: object
@@ -272,6 +272,38 @@ paths:
       summary: Update note by id
       tags:
       - note
+  /auth/refresh:
+    get:
+      consumes:
+      - application/json
+      description: refresh tokens
+      operationId: refresh-tokens
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: token
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      summary: Refresh
+      tags:
+      - auth
   /auth/sign-in:
     post:
       consumes:
@@ -284,7 +316,7 @@ paths:
         name: input
         required: true
         schema:
-          $ref: '#/definitions/rest.signInInput'
+          $ref: '#/definitions/domain.SignInInput'
       produces:
       - application/json
       responses:

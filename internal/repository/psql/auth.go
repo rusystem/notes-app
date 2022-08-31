@@ -35,3 +35,26 @@ func (r *AuthRepository) GetUser(ctx context.Context, username, password string)
 
 	return user, err
 }
+
+func (r *AuthRepository) CreateToken(ctx context.Context, token domain.RefreshSession) error {
+	query := fmt.Sprintf("INSERT INTO %s (user_id, token, expires_at) values ($1, $2, $3)",
+		refreshTokensTable)
+	_, err := r.db.ExecContext(ctx, query, token.UserID, token.Token, token.ExpiresAt)
+
+	return err
+}
+
+func (r *AuthRepository) GetToken(ctx context.Context, token string) (domain.RefreshSession, error) {
+	query := fmt.Sprintf("SELECT id, user_id, token, expires_at FROM %s WHERE token = $1",
+		refreshTokensTable)
+
+	var t domain.RefreshSession
+	if err := r.db.GetContext(ctx, &t, query, token); err != nil {
+		return t, err
+	}
+
+	query = fmt.Sprintf("DELETE FROM %s WHERE user_id=$1", refreshTokensTable)
+	_, err := r.db.ExecContext(ctx, query, t.UserID)
+
+	return t, err
+}
