@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"github.com/go-redis/redis/v9"
 	"github.com/jmoiron/sqlx"
 	"github.com/rusystem/cache"
 	"github.com/rusystem/notes-app/internal/config"
@@ -40,17 +41,13 @@ func init() {
 // @host localhost:8080
 // @BasePath /
 
-// @securityDefinitions.apikey ApiKeyAuth
-// @in header
-// @name Authorization
-
 func main() {
 	cfg, err := config.New(CONFIG_DIR, CONFIG_FILE)
 	if err != nil {
 		logrus.Fatal(err)
 	}
 
-	db, err := database.NewPostgresConnection(database.ConnectionInfo{
+	db, err := database.NewPostgresConnection(database.PSQLConnectionInfo{
 		Host:     cfg.DB.Host,
 		Port:     cfg.DB.Port,
 		Username: cfg.DB.Username,
@@ -61,16 +58,26 @@ func main() {
 	if err != nil {
 		logrus.Fatal(err)
 	}
-
 	defer func(db *sqlx.DB) {
 		if err := db.Close(); err != nil {
 			logrus.Fatal(err)
 		}
 	}(db)
 
+	rdb := database.NewRedisClient(database.RedisConnectionInfo{
+		Host:     cfg.RDB.Host,
+		Port:     cfg.RDB.Port,
+		Password: cfg.RDB.Password,
+	})
+	defer func(rdb *redis.Client) {
+		if err := rdb.Close(); err != nil {
+			logrus.Fatal(err)
+		}
+	}(rdb)
+
 	c := cache.New()
 
-	noteRepo := repository.NewRepository(db)
+	noteRepo := repository.NewRepository(db, rdb)
 	noteService := service.NewService(cfg, c, noteRepo)
 	handler := rest.NewHandler(noteService)
 

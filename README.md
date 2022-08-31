@@ -21,6 +21,7 @@ make migrate
 ### This Rest API contains the following methods:
 [post] /auth/sign-up - to create new user.<br />
 [post] /auth/sign-in - user authentication.<br />
+[get] /auth/logout - session logout.<br />
 [get] /api/note - get all notes.<br />
 [post] /api/note - create new note.<br />
 [get] /api/note/{id} - get note by id.<br />

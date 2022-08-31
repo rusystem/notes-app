@@ -5,39 +5,29 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/rusystem/notes-app/internal/domain"
 	"net/http"
-	"strings"
 )
 
 const (
-	authorizationHeader = "Authorization"
-	userCtx             = "userId"
+	userCtx = "userId"
 )
 
 func (h *Handler) userIdentity(c *gin.Context) {
-	header := c.GetHeader(authorizationHeader)
-	if header == "" {
-		domain.NewErrorResponse(c, http.StatusUnauthorized, "empty auth header")
+	token, err := c.Cookie(domain.AuthCookie)
+	if err != nil || token == "" {
+		domain.NewErrorResponse(c, http.StatusUnauthorized, err.Error())
+		c.Abort()
 		return
 	}
 
-	headerParts := strings.Split(header, " ")
-	if len(headerParts) != 2 || headerParts[0] != "Bearer" {
-		domain.NewErrorResponse(c, http.StatusUnauthorized, "invalid auth header")
-		return
-	}
-
-	if len(headerParts[1]) == 0 {
-		domain.NewErrorResponse(c, http.StatusUnauthorized, "token is empty")
-		return
-	}
-
-	userId, err := h.services.Authorization.ParseToken(headerParts[1])
-	if err != nil {
-		domain.NewErrorResponse(c, http.StatusUnauthorized, "invalid token")
+	userId, err := h.services.GetSession(c, token)
+	if err != nil || userId == 0 {
+		domain.NewErrorResponse(c, http.StatusUnauthorized, err.Error())
+		c.Abort()
 		return
 	}
 
 	c.Set(userCtx, userId)
+	c.Next()
 }
 
 func getUserId(c *gin.Context) (int, error) {

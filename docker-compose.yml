@@ -8,6 +8,7 @@ services:
       - "8080:8080"
     depends_on:
       - db
+      - rdb
     environment:
       - DB_HOST=db
       - DB_PORT=5432
@@ -15,15 +16,24 @@ services:
       - DB_NAME=postgres
       - DB_SSLMODE=disable
       - DB_PASSWORD=qwerty
+      - RDB_HOST=rdb
+      - RDB_PORT=6379
       - KEY_SALT=sdlkfgjhlkjh34lser34523cfrv
-      - KEY_SIGNINGKEY=dklfgjh34lkrnmlvmwe
 
   db:
     restart: always
     image: postgres:latest
     volumes:
-    - ./.database/postgres/data:/var/lib/postgresql/data
+      - ./.database/postgres/data:/var/lib/postgresql/data
     environment:
       - POSTGRES_PASSWORD=qwerty
     ports:
       - "5432:5432"
+
+  rdb:
+    restart: always
+    image: redis:latest
+    volumes:
+      - /myredis/conf:/usr/local/etc/redis
+    ports:
+      - "6379:6379"
