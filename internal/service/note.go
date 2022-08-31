@@ -55,7 +55,7 @@ func (s *NoteService) Delete(ctx context.Context, userId, id int) error {
 }
 
 func (s *NoteService) Update(ctx context.Context, userId, id int, newNote domain.UpdateNote) error {
-	if !newNote.IsCorrect() {
+	if !newNote.IsValid() {
 		return errors.New("update structure has no values")
 	}
 	s.cache.Set(fmt.Sprintf("%d.%d", userId, id), domain.Note{ID: id, Title: *newNote.Title, Description: *newNote.Description}, s.cfg.Cache.Ttl)
