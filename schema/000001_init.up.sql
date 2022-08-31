@@ -14,9 +14,10 @@ CREATE TABLE notes
     description varchar(255)
 );
 
-/*CREATE TABLE users_notes
+CREATE TABLE refresh_tokens
 (
-    id      serial                                      not null unique,
-    user_id int references users (id) on delete cascade not null,
-    note_id int references notes (id) on delete cascade not null
-);*/
+    id         serial                                      not null unique,
+    user_id    int references users (id) on delete cascade not null,
+    token      varchar(255)                                not null unique,
+    expires_at timestamp                                   not null
+);

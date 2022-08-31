@@ -20,7 +20,8 @@ type Config struct {
 	} `mapstructure:"server"`
 
 	Auth struct {
-		TokenTTL time.Duration `mapstructure:"token_ttl"`
+		TokenTTL        time.Duration `mapstructure:"token_ttl"`
+		RefreshTokenTTL time.Duration `mapstructure:"refresh_token_ttl"`
 	} `mapstructure:"auth"`
 }
 
