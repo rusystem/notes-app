@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"crypto/sha1"
 	"errors"
 	"fmt"
@@ -9,10 +10,6 @@ import (
 	"github.com/rusystem/notes-app/internal/domain"
 	"github.com/rusystem/notes-app/internal/repository"
 	"time"
-)
-
-const (
-	tokenTTL = 24 * time.Hour
 )
 
 type tokenClaims struct {
@@ -29,20 +26,20 @@ func NewAuthService(cfg *config.Config, repo repository.Authorization) *AuthServ
 	return &AuthService{cfg, repo}
 }
 
-func (s *AuthService) CreateUser(user domain.User) (int, error) {
+func (s *AuthService) CreateUser(ctx context.Context, user domain.User) (int, error) {
 	user.Password = generatePasswordHash(s.cfg, user.Password)
-	return s.repo.CreateUser(user)
+	return s.repo.CreateUser(ctx, user)
 }
 
-func (s *AuthService) GenerateToken(username, password string) (string, error) {
-	user, err := s.repo.GetUser(username, generatePasswordHash(s.cfg, password))
+func (s *AuthService) GenerateToken(ctx context.Context, username, password string) (string, error) {
+	user, err := s.repo.GetUser(ctx, username, generatePasswordHash(s.cfg, password))
 	if err != nil {
 		return "", err
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, &tokenClaims{
 		jwt.StandardClaims{
-			ExpiresAt: time.Now().Add(tokenTTL).Unix(),
+			ExpiresAt: time.Now().Add(s.cfg.Auth.TokenTTL).Unix(),
 			IssuedAt:  time.Now().Unix(),
 		},
 		user.Id,

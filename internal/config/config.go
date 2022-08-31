@@ -18,6 +18,10 @@ type Config struct {
 	Server struct {
 		Port int `mapstructure:"port"`
 	} `mapstructure:"server"`
+
+	Auth struct {
+		TokenTTL time.Duration `mapstructure:"token_ttl"`
+	} `mapstructure:"auth"`
 }
 
 type Keys struct {

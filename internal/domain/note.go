@@ -1,7 +1,5 @@
 package domain
 
-import "errors"
-
 type Note struct {
 	ID          int    `json:"id"`
 	Title       string `json:"title,max=55" example:"Title"`
@@ -13,10 +11,6 @@ type UpdateNote struct {
 	Description *string `json:"description" example:"Description!"`
 }
 
-func (un *UpdateNote) Validate() error {
-	if un.Title == nil && un.Description == nil {
-		return errors.New("update structure has no values")
-	}
-
-	return nil
+func (un *UpdateNote) IsCorrect() bool {
+	return un.Title != nil && un.Description != nil
 }
