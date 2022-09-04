@@ -12,6 +12,8 @@ type Config struct {
 
 	Key Keys
 
+	Grpc Grpc
+
 	Cache struct {
 		Ttl time.Duration `mapstructure:"ttl"`
 	} `mapstructure:"cache"`
@@ -44,6 +46,10 @@ type Keys struct {
 	Salt string
 }
 
+type Grpc struct {
+	Port int
+}
+
 func New(folder, filename string) (*Config, error) {
 	cfg := new(Config)
 
@@ -67,6 +73,10 @@ func New(folder, filename string) (*Config, error) {
 	}
 
 	if err := envconfig.Process("key", &cfg.Key); err != nil {
+		return nil, err
+	}
+
+	if err := envconfig.Process("grpc", &cfg.Grpc); err != nil {
 		return nil, err
 	}
 

@@ -9,9 +9,11 @@ import (
 	"github.com/rusystem/notes-app/internal/repository"
 	"github.com/rusystem/notes-app/internal/server"
 	"github.com/rusystem/notes-app/internal/service"
+	grpc_client "github.com/rusystem/notes-app/internal/transport/grpc"
 	"github.com/rusystem/notes-app/internal/transport/rest"
 	"github.com/rusystem/notes-app/pkg/database"
 	"github.com/sirupsen/logrus"
+	"log"
 
 	"os"
 	"os/signal"
@@ -77,8 +79,13 @@ func main() {
 
 	c := cache.New()
 
+	logsClient, err := grpc_client.NewClient(cfg.Grpc.Port)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	noteRepo := repository.NewRepository(db, rdb)
-	noteService := service.NewService(cfg, c, noteRepo)
+	noteService := service.NewService(cfg, c, noteRepo, logsClient)
 	handler := rest.NewHandler(noteService)
 
 	srv := server.New(cfg, handler.InitRoutes())
