@@ -14,10 +14,10 @@ type Client struct {
 	logsClient logs.LogsClient
 }
 
-func NewClient(port int) (*Client, error) {
+func NewClient(host string, port int) (*Client, error) {
 	var conn *grpc.ClientConn
 
-	addr := fmt.Sprintf(":%d", port)
+	addr := fmt.Sprintf("%s:%d", host, port)
 
 	conn, err := grpc.Dial(addr, grpc.WithInsecure())
 	if err != nil {

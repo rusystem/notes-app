@@ -47,6 +47,7 @@ type Keys struct {
 }
 
 type Grpc struct {
+	Host string
 	Port int
 }
 

@@ -19,6 +19,7 @@ services:
       - RDB_HOST=rdb
       - RDB_PORT=6379
       - KEY_SALT=sdlkfgjhlkjh34lser34523cfrv
+      - GRPC_HOST=noteslog
       - GRPC_PORT=9000
     networks:
       - app

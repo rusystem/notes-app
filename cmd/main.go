@@ -79,7 +79,7 @@ func main() {
 
 	c := cache.New()
 
-	logsClient, err := grpc_client.NewClient(cfg.Grpc.Port)
+	logsClient, err := grpc_client.NewClient(cfg.Grpc.Host, cfg.Grpc.Port)
 	if err != nil {
 		log.Fatal(err)
 	}
