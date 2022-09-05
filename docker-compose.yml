@@ -1,4 +1,4 @@
-version: '3.3'
+version: '3.5'
 
 services:
   note-app:
@@ -21,7 +21,7 @@ services:
       - KEY_SALT=sdlkfgjhlkjh34lser34523cfrv
       - GRPC_PORT=9000
     networks:
-      - application
+      - app
 
   db:
     restart: always
@@ -33,7 +33,7 @@ services:
     ports:
       - "5432:5432"
     networks:
-      - application
+      - app
 
   rdb:
     restart: always
@@ -43,8 +43,8 @@ services:
     ports:
       - "6379:6379"
     networks:
-      - application
+      - app
 
 networks:
-  application:
-    external: true
+  app:
+    name: note_network

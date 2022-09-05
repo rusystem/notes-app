@@ -3,7 +3,8 @@ package grpc_client
 import (
 	"context"
 	"fmt"
-	logs "github.com/rusystem/notes-log/pkg/domain"
+	"github.com/rusystem/notes-log/pkg/domain"
+	logs "github.com/rusystem/notes-log/pkg/proto"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -16,7 +17,7 @@ type Client struct {
 func NewClient(port int) (*Client, error) {
 	var conn *grpc.ClientConn
 
-	addr := fmt.Sprintf("localhost:%d", port)
+	addr := fmt.Sprintf(":%d", port)
 
 	conn, err := grpc.Dial(addr, grpc.WithInsecure())
 	if err != nil {
@@ -33,13 +34,13 @@ func (c *Client) CloseConnection() error {
 	return c.conn.Close()
 }
 
-func (c *Client) LogRequest(ctx context.Context, req logs.LogItem) error {
-	action, err := logs.ToPbAction(req.Action)
+func (c *Client) LogRequest(ctx context.Context, req domain.LogItem) error {
+	action, err := domain.ToPbAction(req.Action)
 	if err != nil {
 		return err
 	}
 
-	entity, err := logs.ToPbEntity(req.Entity)
+	entity, err := domain.ToPbEntity(req.Entity)
 	if err != nil {
 		return err
 	}
