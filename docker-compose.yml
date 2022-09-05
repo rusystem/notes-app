@@ -1,4 +1,4 @@
-version: '3.3'
+version: '3.5'
 
 services:
   note-app:
@@ -17,6 +17,12 @@ services:
       - DB_PASSWORD=qwerty
       - KEY_SALT=sdlkfgjhlkjh34lser34523cfrv
       - KEY_SIGNINGKEY=dklfgjh34lkrnmlvmwe
+      - RABBIT_USERNAME=guest
+      - RABBIT_PASSWORD=guest
+      - RABBIT_HOST=noteslog
+      - RABBIT_PORT=5672
+    networks:
+      - app
 
   db:
     restart: always
@@ -27,3 +33,10 @@ services:
       - POSTGRES_PASSWORD=qwerty
     ports:
       - "5432:5432"
+    networks:
+      - app
+
+networks:
+  app:
+    name: note_network
+    driver: bridge

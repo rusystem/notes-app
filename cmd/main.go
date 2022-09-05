@@ -8,10 +8,10 @@ import (
 	"github.com/rusystem/notes-app/internal/repository"
 	"github.com/rusystem/notes-app/internal/server"
 	"github.com/rusystem/notes-app/internal/service"
+	"github.com/rusystem/notes-app/internal/transport"
 	"github.com/rusystem/notes-app/internal/transport/rest"
 	"github.com/rusystem/notes-app/pkg/database"
 	"github.com/sirupsen/logrus"
-
 	"os"
 	"os/signal"
 	"syscall"
@@ -70,8 +70,19 @@ func main() {
 
 	c := cache.New()
 
+	ampqSrv := transport.New()
+	if err := ampqSrv.Init(cfg); err != nil {
+		logrus.Fatal(err)
+	}
+
+	defer func(ampqSrv *transport.Server) {
+		if err := ampqSrv.Close(); err != nil {
+			logrus.Fatal(err)
+		}
+	}(ampqSrv)
+
 	noteRepo := repository.NewRepository(db)
-	noteService := service.NewService(cfg, c, noteRepo)
+	noteService := service.NewService(cfg, c, noteRepo, ampqSrv)
 	handler := rest.NewHandler(noteService)
 
 	srv := server.New(cfg, handler.InitRoutes())

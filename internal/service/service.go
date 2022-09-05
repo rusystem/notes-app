@@ -6,6 +6,7 @@ import (
 	"github.com/rusystem/notes-app/internal/config"
 	"github.com/rusystem/notes-app/internal/domain"
 	"github.com/rusystem/notes-app/internal/repository"
+	"github.com/rusystem/notes-app/internal/transport"
 )
 
 type Authorization interface {
@@ -24,14 +25,19 @@ type Note interface {
 	Update(ctx context.Context, userId, id int, newNote domain.UpdateNote) error
 }
 
+type Logs interface {
+	Publisher(item domain.LogItem) error
+}
+
 type Service struct {
 	Authorization
 	Note
+	Logs
 }
 
-func NewService(cfg *config.Config, cache *cache.Cache, repos *repository.Repository) *Service {
+func NewService(cfg *config.Config, cache *cache.Cache, repos *repository.Repository, mq *transport.Server) *Service {
 	return &Service{
-		Authorization: NewAuthService(cfg, repos.Authorization),
-		Note:          NewNoteService(cfg, cache, repos.Note),
+		Authorization: NewAuthService(cfg, repos.Authorization, mq),
+		Note:          NewNoteService(cfg, cache, repos.Note, mq),
 	}
 }

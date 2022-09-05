@@ -9,6 +9,8 @@ import (
 	"github.com/rusystem/notes-app/internal/config"
 	"github.com/rusystem/notes-app/internal/domain"
 	"github.com/rusystem/notes-app/internal/repository"
+	"github.com/rusystem/notes-app/internal/transport"
+	"github.com/sirupsen/logrus"
 	"math/rand"
 	"time"
 )
@@ -21,21 +23,50 @@ type tokenClaims struct {
 type AuthService struct {
 	cfg  *config.Config
 	repo repository.Authorization
+	mq   *transport.Server
 }
 
-func NewAuthService(cfg *config.Config, repo repository.Authorization) *AuthService {
-	return &AuthService{cfg, repo}
+func NewAuthService(cfg *config.Config, repo repository.Authorization, mq *transport.Server) *AuthService {
+	return &AuthService{cfg, repo, mq}
 }
 
 func (s *AuthService) CreateUser(ctx context.Context, user domain.User) (int, error) {
 	user.Password = generatePasswordHash(s.cfg, user.Password)
-	return s.repo.CreateUser(ctx, user)
+
+	id, err := s.repo.CreateUser(ctx, user)
+	if err != nil {
+		return 0, err
+	}
+
+	if err := s.mq.Publisher(domain.LogItem{
+		Entity:    domain.USER,
+		Action:    domain.SIGN_UP,
+		EntityID:  int64(id),
+		Timestamp: time.Now(),
+	}); err != nil {
+		logrus.WithFields(logrus.Fields{
+			"method": "auth.SignUp",
+		}).Error("failed to send log request:", err)
+	}
+
+	return id, nil
 }
 
 func (s *AuthService) SignIn(ctx context.Context, input domain.SignInInput) (string, string, error) {
 	user, err := s.repo.GetUser(ctx, input.Username, generatePasswordHash(s.cfg, input.Password))
 	if err != nil {
 		return "", "", err
+	}
+
+	if err := s.mq.Publisher(domain.LogItem{
+		Entity:    domain.USER,
+		Action:    domain.SIGN_IN,
+		EntityID:  int64(user.Id),
+		Timestamp: time.Now(),
+	}); err != nil {
+		logrus.WithFields(logrus.Fields{
+			"method": "auth.SignIn",
+		}).Error("failed to send log request:", err)
 	}
 
 	return s.GenerateTokens(ctx, user.Id)
