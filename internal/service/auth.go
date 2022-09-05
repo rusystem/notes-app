@@ -7,23 +7,42 @@ import (
 	"github.com/rusystem/notes-app/internal/config"
 	"github.com/rusystem/notes-app/internal/domain"
 	"github.com/rusystem/notes-app/internal/repository"
+	logs "github.com/rusystem/notes-log/pkg/domain"
+	"github.com/sirupsen/logrus"
 	"math/rand"
 	"time"
 )
 
 type AuthService struct {
-	cfg     *config.Config
-	repo    repository.Authorization
-	session repository.Session
+	cfg        *config.Config
+	repo       repository.Authorization
+	session    repository.Session
+	logsClient LogsClient
 }
 
-func NewAuthService(cfg *config.Config, repo repository.Authorization, session repository.Session) *AuthService {
-	return &AuthService{cfg, repo, session}
+func NewAuthService(cfg *config.Config, repo repository.Authorization, session repository.Session, logsClient LogsClient) *AuthService {
+	return &AuthService{cfg, repo, session, logsClient}
 }
 
 func (s *AuthService) CreateUser(ctx context.Context, user domain.User) (int, error) {
 	user.Password = generatePasswordHash(s.cfg, user.Password)
-	return s.repo.CreateUser(ctx, user)
+	id, err := s.repo.CreateUser(ctx, user)
+	if err != nil {
+		return 0, err
+	}
+
+	if err := s.logsClient.LogRequest(ctx, logs.LogItem{
+		Entity:    logs.ENTITY_USER,
+		Action:    logs.ACTION_REGISTER,
+		EntityID:  int64(id),
+		Timestamp: time.Now(),
+	}); err != nil {
+		logrus.WithFields(logrus.Fields{
+			"method": "auth.SignUp",
+		}).Error("failed to send log request:", err)
+	}
+
+	return id, nil
 }
 
 func (s *AuthService) SignIn(ctx context.Context, inp domain.SignInInput) (domain.Cookie, error) {
@@ -40,6 +59,17 @@ func (s *AuthService) SignIn(ctx context.Context, inp domain.SignInInput) (domai
 	err = s.session.Set(ctx, token, user.Id, s.cfg.Auth.SessionTTL)
 	if err != nil {
 		return domain.Cookie{}, err
+	}
+
+	if err := s.logsClient.LogRequest(ctx, logs.LogItem{
+		Entity:    logs.ENTITY_USER,
+		Action:    logs.ACTION_LOGIN,
+		EntityID:  int64(user.Id),
+		Timestamp: time.Now(),
+	}); err != nil {
+		logrus.WithFields(logrus.Fields{
+			"method": "auth.SignIn",
+		}).Error("failed to send log request:", err)
 	}
 
 	return domain.Cookie{Name: domain.AuthCookie, Token: token, MaxAge: int(s.cfg.Auth.SessionTTL.Seconds())}, nil

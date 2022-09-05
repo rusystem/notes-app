@@ -1,4 +1,4 @@
-version: '3.3'
+version: '3.5'
 
 services:
   note-app:
@@ -19,6 +19,10 @@ services:
       - RDB_HOST=rdb
       - RDB_PORT=6379
       - KEY_SALT=sdlkfgjhlkjh34lser34523cfrv
+      - GRPC_HOST=noteslog
+      - GRPC_PORT=9000
+    networks:
+      - app
 
   db:
     restart: always
@@ -29,6 +33,8 @@ services:
       - POSTGRES_PASSWORD=qwerty
     ports:
       - "5432:5432"
+    networks:
+      - app
 
   rdb:
     restart: always
@@ -37,3 +43,9 @@ services:
       - /myredis/conf:/usr/local/etc/redis
     ports:
       - "6379:6379"
+    networks:
+      - app
+
+networks:
+  app:
+    name: note_network
