@@ -5,6 +5,7 @@ import (
 	"github.com/rusystem/notes-app/internal/service"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
+	"net/http"
 
 	_ "github.com/rusystem/notes-app/docs"
 )
@@ -39,6 +40,10 @@ func (h *Handler) InitRoutes() *gin.Engine {
 			note.DELETE("/:id", h.delete)
 		}
 	}
+
+	router.GET("/ping", func(c *gin.Context) {
+		c.String(http.StatusOK, "pong")
+	})
 
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 

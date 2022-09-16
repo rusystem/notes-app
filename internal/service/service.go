@@ -8,6 +8,8 @@ import (
 	"github.com/rusystem/notes-app/internal/repository"
 )
 
+//go:generate mockgen -source=service.go -destination=mocks/mock.go
+
 type Authorization interface {
 	CreateUser(ctx context.Context, user domain.User) (int, error)
 	SignIn(ctx context.Context, input domain.SignInInput) (string, string, error)
