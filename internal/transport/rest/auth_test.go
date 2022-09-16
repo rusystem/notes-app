@@ -9,20 +9,19 @@ import (
 	"github.com/rusystem/notes-app/internal/service"
 	serviceMock "github.com/rusystem/notes-app/internal/service/mocks"
 	"github.com/stretchr/testify/assert"
-	"golang.org/x/net/context"
 	"net/http/httptest"
 	"testing"
 )
 
 func TestHandler_signUp(t *testing.T) {
-	type mockBehavior func(r *serviceMock.MockAuthorization, ctx context.Context, user domain.User)
+	type mockBehavior func(r *serviceMock.MockAuthorization, ctx *gin.Context, user domain.User)
 
 	tests := []struct {
 		name                 string
 		inputBody            string
 		inputUser            domain.User
 		mockBehavior         mockBehavior
-		ctx                  context.Context
+		ctx                  *gin.Context
 		expectedStatusCode   int
 		expectedResponseBody string
 	}{
@@ -34,10 +33,9 @@ func TestHandler_signUp(t *testing.T) {
 				Name:     "test name",
 				Password: "123456qw",
 			},
-			mockBehavior: func(r *serviceMock.MockAuthorization, ctx context.Context, user domain.User) {
+			mockBehavior: func(r *serviceMock.MockAuthorization, ctx *gin.Context, user domain.User) {
 				r.EXPECT().CreateUser(ctx, user).Return(1, nil)
 			},
-			ctx:                  context.Background(),
 			expectedStatusCode:   200,
 			expectedResponseBody: `{"id":1}`,
 		},
@@ -45,8 +43,7 @@ func TestHandler_signUp(t *testing.T) {
 			name:                 "wrong input",
 			inputBody:            `{"username": "username"}`,
 			inputUser:            domain.User{},
-			mockBehavior:         func(r *serviceMock.MockAuthorization, ctx context.Context, user domain.User) {},
-			ctx:                  context.Background(),
+			mockBehavior:         func(r *serviceMock.MockAuthorization, ctx *gin.Context, user domain.User) {},
 			expectedStatusCode:   400,
 			expectedResponseBody: "{\"message\":\"invalid input body\"}",
 		},
@@ -58,7 +55,7 @@ func TestHandler_signUp(t *testing.T) {
 				Name:     "test name",
 				Password: "123456qw",
 			},
-			mockBehavior: func(r *serviceMock.MockAuthorization, ctx context.Context, user domain.User) {
+			mockBehavior: func(r *serviceMock.MockAuthorization, ctx *gin.Context, user domain.User) {
 				r.EXPECT().CreateUser(ctx, user).Return(0, errors.New("internal server error"))
 			},
 			expectedStatusCode:   500,
@@ -72,7 +69,7 @@ func TestHandler_signUp(t *testing.T) {
 			defer c.Finish()
 
 			repo := serviceMock.NewMockAuthorization(c)
-			test.mockBehavior(repo, nil, test.inputUser)
+			test.mockBehavior(repo, test.ctx, test.inputUser)
 
 			services := &service.Service{Authorization: repo}
 			handler := Handler{services}
