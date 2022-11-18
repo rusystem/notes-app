@@ -8,6 +8,7 @@ import (
 
 type Config struct {
 	DB Postgres
+	MQ Rabbit
 
 	Key Keys
 
@@ -39,6 +40,13 @@ type Postgres struct {
 	Password string
 }
 
+type Rabbit struct {
+	Username string
+	Password string
+	Host     string
+	Port     int
+}
+
 func New(folder, filename string) (*Config, error) {
 	cfg := new(Config)
 
@@ -58,6 +66,10 @@ func New(folder, filename string) (*Config, error) {
 	}
 
 	if err := envconfig.Process("key", &cfg.Key); err != nil {
+		return nil, err
+	}
+
+	if err := envconfig.Process("rabbit", &cfg.MQ); err != nil {
 		return nil, err
 	}
 
